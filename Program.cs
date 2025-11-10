@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OnlineShopBackend.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://localhost:5001");
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -33,6 +34,5 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();
