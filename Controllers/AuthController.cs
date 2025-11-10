@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using OnlineShopBackend.Data;
+using OnlineShopBackend.Dtos;
 using OnlineShopBackend.Models;
-using BCrypt.Net;
 using System.Linq;
+
+using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace OnlineShopBackend.Controllers
 {
@@ -17,22 +19,27 @@ namespace OnlineShopBackend.Controllers
             _context = context;
         }
 
-        // ✅ SIGNUP ENDPOINT
         [HttpPost("signup")]
-        public IActionResult Signup([FromBody] User user)
+        public IActionResult Signup([FromBody] SignupRequest request)
         {
-            if (_context.Users.Any(u => u.Email == user.Email))
+            if (_context.Users.Any(u => u.Email == request.Email))
                 return BadRequest(new { message = "Email already exists" });
 
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
-            user.PasswordHash = hashedPassword;
+            var hashedPassword = BCryptNet.HashPassword(request.Password);
+            var user = new User
+            {
+                Name = request.Name,
+                Surname = request.Surname,
+                Email = request.Email,
+                PasswordHash = hashedPassword
+            };
+
             _context.Users.Add(user);
             _context.SaveChanges();
 
             return Ok(new { message = "User registered successfully" });
         }
 
-        // ✅ LOGIN ENDPOINT
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
@@ -40,14 +47,14 @@ namespace OnlineShopBackend.Controllers
             if (existingUser == null)
                 return Unauthorized(new { message = "Invalid email or password" });
 
-            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, existingUser.PasswordHash);
+            bool isPasswordValid = BCryptNet.Verify(request.Password, existingUser.PasswordHash);
             if (!isPasswordValid)
                 return Unauthorized(new { message = "Invalid email or password" });
 
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 message = "Login successful",
-                user = new 
+                user = new
                 {
                     existingUser.Name,
                     existingUser.Surname,
@@ -55,12 +62,5 @@ namespace OnlineShopBackend.Controllers
                 }
             });
         }
-    }
-
-    // Separate class for login data
-    public class LoginRequest
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
     }
 }

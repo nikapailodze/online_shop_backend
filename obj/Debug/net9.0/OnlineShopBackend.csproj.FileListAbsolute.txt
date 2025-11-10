@@ -156,3 +156,4 @@
 /Users/nikapailodze/Desktop/OnlineShopBackend/obj/Debug/net9.0/OnlineShopBackend.pdb
 /Users/nikapailodze/Desktop/OnlineShopBackend/obj/Debug/net9.0/OnlineShopBackend.genruntimeconfig.cache
 /Users/nikapailodze/Desktop/OnlineShopBackend/obj/Debug/net9.0/ref/OnlineShopBackend.dll
+/Users/nikapailodze/Desktop/OnlineShopBackend/obj/Debug/net9.0/OnlineShopBackend.sourcelink.json
