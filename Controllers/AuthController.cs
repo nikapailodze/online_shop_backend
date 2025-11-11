@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using OnlineShopBackend.Data;
 using OnlineShopBackend.Dtos;
 using OnlineShopBackend.Models;
+using OnlineShopBackend.Services;
 using System.Linq;
+using System;
 
 using BCryptNet = BCrypt.Net.BCrypt;
 
@@ -13,10 +16,14 @@ namespace OnlineShopBackend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ITokenService _tokenService;
+        private readonly JwtSettings _jwtSettings;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, ITokenService tokenService, IOptions<JwtSettings> jwtOptions)
         {
             _context = context;
+            _tokenService = tokenService;
+            _jwtSettings = jwtOptions.Value;
         }
 
         [HttpPost("signup")]
@@ -51,9 +58,14 @@ namespace OnlineShopBackend.Controllers
             if (!isPasswordValid)
                 return Unauthorized(new { message = "Invalid email or password" });
 
+            var token = _tokenService.GenerateToken(existingUser);
+            var expiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiresInMinutes);
+
             return Ok(new
             {
                 message = "Login successful",
+                token,
+                expiresAtUtc = expiresAt,
                 user = new
                 {
                     existingUser.Name,
