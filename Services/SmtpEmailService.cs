@@ -16,50 +16,57 @@ namespace OnlineShopBackend.Services
 
         public async Task SendPurchaseNotificationAsync(string purchaserEmail, IEnumerable<CartItem> items, decimal totalPrice)
         {
-            if (string.IsNullOrWhiteSpace(_settings.SmtpHost) ||
-                string.IsNullOrWhiteSpace(_settings.FromEmail))
+            try
             {
-                return;
-            }
+                if (string.IsNullOrWhiteSpace(_settings.SmtpHost) ||
+                    string.IsNullOrWhiteSpace(_settings.FromEmail))
+                {
+                    return;
+                }
 
-            using var client = new SmtpClient(_settings.SmtpHost, _settings.SmtpPort)
-            {
-                EnableSsl = _settings.EnableSsl
-            };
+                using var client = new SmtpClient(_settings.SmtpHost, _settings.SmtpPort)
+                {
+                    EnableSsl = _settings.EnableSsl
+                };
 
-            if (!string.IsNullOrWhiteSpace(_settings.UserName))
-            {
-                client.Credentials = new NetworkCredential(_settings.UserName, _settings.Password);
-            }
+                if (!string.IsNullOrWhiteSpace(_settings.UserName))
+                {
+                    client.Credentials = new NetworkCredential(_settings.UserName, _settings.Password);
+                }
 
-            var body = BuildBody(purchaserEmail, items, totalPrice);
+                var body = BuildBody(purchaserEmail, items, totalPrice);
 
-            var purchaseMessage = new MailMessage
-            {
-                From = new MailAddress(_settings.FromEmail),
-                Subject = "Your order confirmation",
-                Body = body,
-                IsBodyHtml = false
-            };
-
-            if (!string.IsNullOrWhiteSpace(purchaserEmail))
-            {
-                purchaseMessage.To.Add(purchaserEmail);
-                await client.SendMailAsync(purchaseMessage);
-            }
-
-            if (!string.IsNullOrWhiteSpace(_settings.NotifyEmail))
-            {
-                var notifyMessage = new MailMessage
+                var purchaseMessage = new MailMessage
                 {
                     From = new MailAddress(_settings.FromEmail),
-                    Subject = "New purchase received",
+                    Subject = "Your order confirmation",
                     Body = body,
                     IsBodyHtml = false
                 };
 
-                notifyMessage.To.Add(_settings.NotifyEmail);
-                await client.SendMailAsync(notifyMessage);
+                if (!string.IsNullOrWhiteSpace(purchaserEmail))
+                {
+                    purchaseMessage.To.Add(purchaserEmail);
+                    await client.SendMailAsync(purchaseMessage);
+                }
+
+                if (!string.IsNullOrWhiteSpace(_settings.NotifyEmail))
+                {
+                    var notifyMessage = new MailMessage
+                    {
+                        From = new MailAddress(_settings.FromEmail),
+                        Subject = "New purchase received",
+                        Body = body,
+                        IsBodyHtml = false
+                    };
+
+                    notifyMessage.To.Add(_settings.NotifyEmail);
+                    await client.SendMailAsync(notifyMessage);
+                }
+            }
+            catch
+            {
+                // Avoid blocking checkout if email fails; log if logging is added later.
             }
         }
 
