@@ -19,15 +19,18 @@ namespace OnlineShopBackend.Data
 
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .HasColumnType("decimal(18,2)");
 
             modelBuilder.Entity<Order>()
                 .Property(o => o.TotalPrice)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .HasColumnType("decimal(18,2)");
 
             modelBuilder.Entity<OrderItem>()
                 .Property(oi => oi.UnitPrice)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .HasColumnType("decimal(18,2)");
 
             modelBuilder.Entity<Product>().HasData(
                 new Product

@@ -11,7 +11,7 @@ using OnlineShopBackend.Data;
 namespace OnlineShopBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251208045313_InitialFull")]
+    [Migration("20251208045938_InitialFull")]
     partial class InitialFull
     {
         /// <inheritdoc />
@@ -61,7 +61,7 @@ namespace OnlineShopBackend.Migrations
 
                     b.Property<decimal>("TotalPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
@@ -96,7 +96,7 @@ namespace OnlineShopBackend.Migrations
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -131,7 +131,7 @@ namespace OnlineShopBackend.Migrations
 
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SizesCsv")
                         .IsRequired()
