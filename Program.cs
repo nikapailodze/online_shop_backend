@@ -74,7 +74,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     if (!string.IsNullOrWhiteSpace(dbConnection))
     {
-        options.UseSqlServer(dbConnection);
+        // Prefer MySQL if the connection string looks like MySQL, otherwise SQL Server.
+        if (dbConnection.Contains("Server=", StringComparison.OrdinalIgnoreCase) &&
+            dbConnection.Contains("mysql", StringComparison.OrdinalIgnoreCase))
+        {
+            options.UseMySql(dbConnection, ServerVersion.AutoDetect(dbConnection));
+        }
+        else
+        {
+            options.UseSqlServer(dbConnection);
+        }
     }
     else
     {

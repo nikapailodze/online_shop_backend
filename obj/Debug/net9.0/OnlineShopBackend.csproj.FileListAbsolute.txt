@@ -200,3 +200,5 @@
 /Users/nikapailodze/Desktop/OnlineShopBackend/bin/Debug/net9.0/publish/OnlineShopBackend.deps.json
 /Users/nikapailodze/Desktop/OnlineShopBackend/bin/Debug/net9.0/publish/OnlineShopBackend.runtimeconfig.json
 /Users/nikapailodze/Desktop/OnlineShopBackend/bin/Debug/net9.0/publish/OnlineShopBackend.staticwebassets.endpoints.json
+/Users/nikapailodze/Desktop/OnlineShopBackend/bin/Debug/net9.0/MySqlConnector.dll
+/Users/nikapailodze/Desktop/OnlineShopBackend/bin/Debug/net9.0/Pomelo.EntityFrameworkCore.MySql.dll
