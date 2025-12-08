@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: onlineshop-backend
+    env: dotnet
+    plan: starter
+    buildCommand: dotnet publish OnlineShopBackend.csproj -c Release -o out
+    startCommand: dotnet out/OnlineShopBackend.dll
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:10000
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: JWT_ISSUER
+        value: OnlineShopBackend
+      - key: JWT_AUDIENCE
+        value: OnlineShopFrontend
+      - key: JWT_EXPIRES_IN_MINUTES
+        value: "60"
+      - key: DB_CONNECTION_STRING
+        sync: false
+      - key: ENABLE_SWAGGER
+        value: "false"
+      - key: EmailSettings__SmtpHost
+        sync: false
+      - key: EmailSettings__SmtpPort
+        sync: false
+      - key: EmailSettings__EnableSsl
+        sync: false
+      - key: EmailSettings__UserName
+        sync: false
+      - key: EmailSettings__Password
+        sync: false
+      - key: EmailSettings__FromEmail
+        sync: false
+      - key: EmailSettings__NotifyEmail
+        sync: false

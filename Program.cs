@@ -30,6 +30,12 @@ void ApplyFlatJwtEnvOverrides(IConfiguration config)
 
 ApplyFlatJwtEnvOverrides(builder.Configuration);
 
+// Allow a flat DB connection string env var override (for SQL Server hosting).
+var dbConnection =
+    builder.Configuration.GetConnectionString("Default") ??
+    builder.Configuration["DbConnectionString"] ??
+    Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+
 var jwtSection = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<JwtSettings>(jwtSection);
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -61,7 +67,16 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=shop.db"));
+{
+    if (!string.IsNullOrWhiteSpace(dbConnection))
+    {
+        options.UseSqlServer(dbConnection);
+    }
+    else
+    {
+        options.UseSqlite("Data Source=shop.db");
+    }
+});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact",
@@ -86,6 +101,16 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+else
+{
+    // Enable Swagger in non-development when explicitly allowed via env var.
+    var enableSwagger = builder.Configuration["ENABLE_SWAGGER"];
+    if (string.Equals(enableSwagger, "true", StringComparison.OrdinalIgnoreCase))
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
 }
 
 app.MapControllers();
