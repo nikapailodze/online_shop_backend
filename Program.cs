@@ -8,7 +8,11 @@ using OnlineShopBackend.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://localhost:5001");
+
+// Respect platform-provided port/urls (Render uses PORT), fallback to 8080.
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? $"http://0.0.0.0:{port}";
+builder.WebHost.UseUrls(urls);
 
 // Allow flat env vars (e.g., JWT_SECRETKEY) to override Jwt settings for hosts
 // that don't support double-underscore nesting.
