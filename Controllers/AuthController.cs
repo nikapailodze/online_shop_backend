@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OnlineShopBackend.Data;
 using OnlineShopBackend.Dtos;
@@ -29,20 +30,34 @@ namespace OnlineShopBackend.Controllers
         [HttpPost("signup")]
         public IActionResult Signup([FromBody] SignupRequest request)
         {
-            if (_context.Users.Any(u => u.Email == request.Email))
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            var email = (request.Email ?? string.Empty).Trim().ToLowerInvariant();
+            var name = (request.Name ?? string.Empty).Trim();
+            var surname = (request.Surname ?? string.Empty).Trim();
+
+            if (_context.Users.Any(u => u.Email.ToLower() == email))
                 return BadRequest(new { message = "Email already exists" });
 
             var hashedPassword = BCryptNet.HashPassword(request.Password);
             var user = new User
             {
-                Name = request.Name,
-                Surname = request.Surname,
-                Email = request.Email,
+                Name = name,
+                Surname = surname,
+                Email = email,
                 PasswordHash = hashedPassword
             };
 
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            try
+            {
+                _context.Users.Add(user);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "Email already exists" });
+            }
 
             return Ok(new { message = "User registered successfully" });
         }
