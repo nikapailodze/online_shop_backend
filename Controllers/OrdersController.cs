@@ -70,6 +70,16 @@ namespace OnlineShopBackend.Controllers
                 return BadRequest(new { message = "Cart is empty." });
             }
 
+            // If a product was deleted after being added to the cart, gracefully clean up
+            // instead of throwing a null reference during checkout.
+            var orphanedItems = cartItems.Where(ci => ci.Product == null).ToList();
+            if (orphanedItems.Any())
+            {
+                _context.CartItems.RemoveRange(orphanedItems);
+                await _context.SaveChangesAsync();
+                return BadRequest(new { message = "Some items are no longer available and were removed from your cart. Please review your cart and try again." });
+            }
+
             var totalPrice = cartItems.Sum(ci => ci.Product.Price * ci.Quantity);
             var order = new Order
             {
