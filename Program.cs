@@ -6,6 +6,7 @@ using OnlineShopBackend.Data;
 using OnlineShopBackend.Models;
 using OnlineShopBackend.Services;
 using System.Text;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,9 +84,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
               dbConnection.Contains("User Id=", StringComparison.OrdinalIgnoreCase)));
 
         if (useMySql)
-            options.UseMySql(dbConnection, ServerVersion.AutoDetect(dbConnection));
+        {
+            var mysqlVersionString = builder.Configuration["DB_MYSQL_VERSION"] ?? "8.0.36";
+            var serverVersion = ServerVersion.Parse(mysqlVersionString);
+            options.UseMySql(dbConnection, serverVersion);
+        }
         else
+        {
             options.UseSqlServer(dbConnection);
+        }
     }
     else
     {
