@@ -39,6 +39,7 @@ var dbConnection =
     builder.Configuration.GetConnectionString("Default") ??
     builder.Configuration["DbConnectionString"] ??
     Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+var dbProvider = (builder.Configuration["DB_PROVIDER"] ?? string.Empty).ToLowerInvariant();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<JwtSettings>(jwtSection);
@@ -74,16 +75,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     if (!string.IsNullOrWhiteSpace(dbConnection))
     {
-        // Prefer MySQL if the connection string looks like MySQL, otherwise SQL Server.
-        if (dbConnection.Contains("Server=", StringComparison.OrdinalIgnoreCase) &&
-            dbConnection.Contains("mysql", StringComparison.OrdinalIgnoreCase))
-        {
+        var useMySql =
+            dbProvider == "mysql" ||
+            (dbProvider == string.Empty &&
+             (dbConnection.Contains("Port=3306", StringComparison.OrdinalIgnoreCase) ||
+              dbConnection.Contains("Uid=", StringComparison.OrdinalIgnoreCase) ||
+              dbConnection.Contains("User Id=", StringComparison.OrdinalIgnoreCase)));
+
+        if (useMySql)
             options.UseMySql(dbConnection, ServerVersion.AutoDetect(dbConnection));
-        }
         else
-        {
             options.UseSqlServer(dbConnection);
-        }
     }
     else
     {
