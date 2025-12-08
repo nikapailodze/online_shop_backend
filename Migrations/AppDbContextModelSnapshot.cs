@@ -137,38 +137,6 @@ namespace OnlineShopBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ColorsCsv = "black,blue,gray,brown",
-                            Description = "Extreme warmth meets sculptural form. A cocoon of protection, designed for resilience.",
-                            ImageUrl = "/merch1.png",
-                            Name = "VANTA Coat",
-                            Price = 320m,
-                            SizesCsv = "S,M,L,XL"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ColorsCsv = "black,white,brown",
-                            Description = "Fluid structure meets bold tailoring. A statement in modern minimalism.",
-                            ImageUrl = "/merch2.png",
-                            Name = "VANTA Suite",
-                            Price = 220m,
-                            SizesCsv = "S,M,L,XL"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ColorsCsv = "black,gray",
-                            Description = "Lightweight everyday favorite with breathable fabric for all seasons.",
-                            ImageUrl = "/merch3.png",
-                            Name = "VANTA Tee",
-                            Price = 99.99m,
-                            SizesCsv = "XS,S,M,L,XL,XXL"
-                        });
                 });
 
             modelBuilder.Entity("OnlineShopBackend.Models.User", b =>

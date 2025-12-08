@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace OnlineShopBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialFull : Migration
+    public partial class InitialNoSeed : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -125,16 +123,6 @@ namespace OnlineShopBackend.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "Products",
-                columns: new[] { "Id", "ColorsCsv", "Description", "ImageUrl", "Name", "Price", "SizesCsv" },
-                values: new object[,]
-                {
-                    { 1, "black,blue,gray,brown", "Extreme warmth meets sculptural form. A cocoon of protection, designed for resilience.", "/merch1.png", "VANTA Coat", 320m, "S,M,L,XL" },
-                    { 2, "black,white,brown", "Fluid structure meets bold tailoring. A statement in modern minimalism.", "/merch2.png", "VANTA Suite", 220m, "S,M,L,XL" },
-                    { 3, "black,gray", "Lightweight everyday favorite with breathable fabric for all seasons.", "/merch3.png", "VANTA Tee", 99.99m, "XS,S,M,L,XL,XXL" }
                 });
 
             migrationBuilder.CreateIndex(
