@@ -10,6 +10,26 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://localhost:5001");
 
+// Allow flat env vars (e.g., JWT_SECRETKEY) to override Jwt settings for hosts
+// that don't support double-underscore nesting.
+void ApplyFlatJwtEnvOverrides(IConfiguration config)
+{
+    static void SetIfPresent(IConfiguration config, string key, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            config[key] = value;
+        }
+    }
+
+    SetIfPresent(config, "Jwt:SecretKey", Environment.GetEnvironmentVariable("JWT_SECRET_KEY"));
+    SetIfPresent(config, "Jwt:Issuer", Environment.GetEnvironmentVariable("JWT_ISSUER"));
+    SetIfPresent(config, "Jwt:Audience", Environment.GetEnvironmentVariable("JWT_AUDIENCE"));
+    SetIfPresent(config, "Jwt:ExpiresInMinutes", Environment.GetEnvironmentVariable("JWT_EXPIRES_IN_MINUTES"));
+}
+
+ApplyFlatJwtEnvOverrides(builder.Configuration);
+
 var jwtSection = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<JwtSettings>(jwtSection);
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
