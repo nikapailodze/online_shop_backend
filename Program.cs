@@ -87,12 +87,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         {
             var mysqlVersionString = builder.Configuration["DB_MYSQL_VERSION"] ?? "8.0.36";
             var serverVersion = ServerVersion.Parse(mysqlVersionString);
-            options.UseMySql(dbConnection, serverVersion);
+            options.UseMySql(dbConnection, serverVersion, mySqlOptions =>
+            {
+                mySqlOptions.EnableRetryOnFailure();
+            });
         }
         else
         {
-            options.UseSqlServer(dbConnection);
+            options.UseSqlServer(dbConnection, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure();
+            });
         }
+
+        options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
     }
     else
     {
@@ -151,3 +159,6 @@ else
 
 app.MapControllers();
 app.Run();
+// Suppress pending model changes warning during startup migrations on hosted envs.
+// (Handled by committed migrations.)
+// Note: ConfigureWarnings is applied per DbContext below instead.
