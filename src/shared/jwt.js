@@ -8,6 +8,7 @@ function createToken(user) {
       email: user.Email,
       name: user.Name,
       surname: user.Surname,
+      role: user.Role || 'user',
     },
     config.jwtSecret,
     {

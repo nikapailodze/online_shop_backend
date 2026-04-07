@@ -9,21 +9,7 @@ class ConsultationsService {
   }
 
   async onModuleInit() {
-    await run(`
-      CREATE TABLE IF NOT EXISTS "Consultations" (
-        "Id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-        "UserId" INTEGER NOT NULL,
-        "Name" TEXT NOT NULL,
-        "Surname" TEXT NOT NULL,
-        "Email" TEXT NOT NULL,
-        "PhoneNumber" TEXT NOT NULL,
-        "IdNumber" TEXT NULL,
-        "Reason" TEXT NOT NULL,
-        "Date" TEXT NOT NULL,
-        "Time" TEXT NOT NULL,
-        "CreatedAtUtc" TEXT NOT NULL
-      )
-    `);
+    return;
   }
 
   async create(userId, body) {
@@ -55,6 +41,28 @@ class ConsultationsService {
       message: 'Consultation scheduled successfully.',
       createdAtUtc,
     };
+  }
+
+  async getAll() {
+    const { all } = require('../../shared/database');
+    return all(
+      `
+        SELECT
+          c."Id" AS id,
+          c."UserId" AS userId,
+          c."Name" AS name,
+          c."Surname" AS surname,
+          c."Email" AS email,
+          c."PhoneNumber" AS phoneNumber,
+          c."IdNumber" AS idNumber,
+          c."Reason" AS reason,
+          c."Date" AS date,
+          c."Time" AS time,
+          c."CreatedAtUtc" AS createdAtUtc
+        FROM "Consultations" c
+        ORDER BY c."CreatedAtUtc" DESC
+      `,
+    );
   }
 
   async sendNotification(body) {

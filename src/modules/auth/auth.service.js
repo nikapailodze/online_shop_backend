@@ -24,9 +24,10 @@ class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const role = config.adminEmails.includes(email) ? 'admin' : 'user';
     await run(
-      'INSERT INTO "Users" ("Name", "Surname", "Email", "PasswordHash") VALUES (?, ?, ?, ?)',
-      [name, surname, email, passwordHash],
+      'INSERT INTO "Users" ("Name", "Surname", "Email", "PasswordHash", "Role") VALUES (?, ?, ?, ?, ?)',
+      [name, surname, email, passwordHash, role],
     );
 
     return { message: 'User registered successfully' };
@@ -59,6 +60,7 @@ class AuthService {
         Name: user.Name,
         Surname: user.Surname,
         Email: user.Email,
+        Role: user.Role || 'user',
       },
     };
   }

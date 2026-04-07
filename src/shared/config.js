@@ -24,6 +24,12 @@ const config = {
   jwtIssuer: process.env.JWT_ISSUER || 'OnlineShopBackend',
   jwtAudience: process.env.JWT_AUDIENCE || 'OnlineShopFrontend',
   jwtExpiresInMinutes: Number(process.env.JWT_EXPIRES_IN_MINUTES || 60),
+  adminEmails: (
+    process.env.ADMIN_EMAILS || 'nikapaila01@gmail.com'
+  )
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean),
   corsOrigins: (process.env.CORS_ORIGINS || '')
     .split(',')
     .map((value) => value.trim())

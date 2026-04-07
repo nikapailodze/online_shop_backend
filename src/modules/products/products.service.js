@@ -1,5 +1,5 @@
 const { Injectable, NotFoundException } = require('@nestjs/common');
-const { all, get } = require('../../shared/database');
+const { all, get, run } = require('../../shared/database');
 
 function mapProduct(product) {
   return {
@@ -32,6 +32,51 @@ class ProductsService {
     }
 
     return mapProduct(product);
+  }
+
+  async createProduct(body) {
+    const result = await run(
+      `
+        INSERT INTO "Products" ("Name", "Description", "Price", "ImageUrl", "SizesCsv", "ColorsCsv")
+        VALUES (?, ?, ?, ?, ?, ?)
+      `,
+      [
+        body.name,
+        body.description,
+        Number(body.price).toFixed(2),
+        body.imageUrl,
+        Array.isArray(body.sizes) ? body.sizes.join(',') : '',
+        Array.isArray(body.colors) ? body.colors.join(',') : '',
+      ],
+    );
+
+    return this.getProductById(result.lastID);
+  }
+
+  async updateProduct(id, body) {
+    const existing = await get('SELECT * FROM "Products" WHERE "Id" = ?', [id]);
+    if (!existing) {
+      throw new NotFoundException({ message: 'Product not found.' });
+    }
+
+    await run(
+      `
+        UPDATE "Products"
+        SET "Name" = ?, "Description" = ?, "Price" = ?, "ImageUrl" = ?, "SizesCsv" = ?, "ColorsCsv" = ?
+        WHERE "Id" = ?
+      `,
+      [
+        body.name ?? existing.Name,
+        body.description ?? existing.Description,
+        body.price === undefined ? existing.Price : Number(body.price).toFixed(2),
+        body.imageUrl ?? existing.ImageUrl,
+        Array.isArray(body.sizes) ? body.sizes.join(',') : existing.SizesCsv,
+        Array.isArray(body.colors) ? body.colors.join(',') : existing.ColorsCsv,
+        id,
+      ],
+    );
+
+    return this.getProductById(id);
   }
 }
 

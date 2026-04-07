@@ -1,11 +1,17 @@
 const {
+  Body,
   Controller,
   Get,
   Param,
+  Patch,
   ParseIntPipe,
+  Post,
+  UseGuards,
 } = require('@nestjs/common');
 const ReflectMetadata = Reflect;
 const { ProductsService } = require('./products.service');
+const { AuthGuard } = require('../../shared/auth.guard');
+const { AdminGuard } = require('../../shared/admin.guard');
 
 class ProductsController {
   constructor(productsService) {
@@ -18,6 +24,14 @@ class ProductsController {
 
   async getProductById(id) {
     return this.productsService.getProductById(id);
+  }
+
+  async createProduct(body) {
+    return this.productsService.createProduct(body);
+  }
+
+  async updateProduct(id, body) {
+    return this.productsService.updateProduct(id, body);
   }
 }
 
@@ -40,6 +54,29 @@ Param('id', ParseIntPipe)(
   'getProductById',
   0,
 );
+Post('admin')(
+  ProductsController.prototype,
+  'createProduct',
+  Object.getOwnPropertyDescriptor(ProductsController.prototype, 'createProduct'),
+);
+UseGuards(AuthGuard, AdminGuard)(
+  ProductsController.prototype,
+  'createProduct',
+  Object.getOwnPropertyDescriptor(ProductsController.prototype, 'createProduct'),
+);
+Body()(ProductsController.prototype, 'createProduct', 0);
+Patch('admin/:id')(
+  ProductsController.prototype,
+  'updateProduct',
+  Object.getOwnPropertyDescriptor(ProductsController.prototype, 'updateProduct'),
+);
+UseGuards(AuthGuard, AdminGuard)(
+  ProductsController.prototype,
+  'updateProduct',
+  Object.getOwnPropertyDescriptor(ProductsController.prototype, 'updateProduct'),
+);
+Param('id', ParseIntPipe)(ProductsController.prototype, 'updateProduct', 0);
+Body()(ProductsController.prototype, 'updateProduct', 1);
 ReflectMetadata.defineMetadata(
   'design:paramtypes',
   [ProductsService],
