@@ -2,6 +2,7 @@ require('reflect-metadata');
 
 const { NestFactory } = require('@nestjs/core');
 const { ValidationPipe } = require('@nestjs/common');
+const express = require('express');
 const { AppModule } = require('./modules/app.module');
 const { config } = require('./shared/config');
 const { initializeDatabase } = require('./shared/bootstrap');
@@ -9,6 +10,10 @@ const { initializeDatabase } = require('./shared/bootstrap');
 async function bootstrap() {
   await initializeDatabase();
   const app = await NestFactory.create(AppModule);
+  const bodyLimit = '25mb';
+
+  app.use(express.json({ limit: bodyLimit }));
+  app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
