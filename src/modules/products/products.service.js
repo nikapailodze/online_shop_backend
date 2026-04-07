@@ -78,6 +78,17 @@ class ProductsService {
 
     return this.getProductById(id);
   }
+
+  async deleteProduct(id) {
+    const existing = await get('SELECT * FROM "Products" WHERE "Id" = ?', [id]);
+    if (!existing) {
+      throw new NotFoundException({ message: 'Product not found.' });
+    }
+
+    await run('DELETE FROM "Products" WHERE "Id" = ?', [id]);
+
+    return { success: true };
+  }
 }
 
 Injectable()(ProductsService);

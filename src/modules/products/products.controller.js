@@ -1,6 +1,7 @@
 const {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -32,6 +33,10 @@ class ProductsController {
 
   async updateProduct(id, body) {
     return this.productsService.updateProduct(id, body);
+  }
+
+  async deleteProduct(id) {
+    return this.productsService.deleteProduct(id);
   }
 }
 
@@ -77,6 +82,17 @@ UseGuards(AuthGuard, AdminGuard)(
 );
 Param('id', ParseIntPipe)(ProductsController.prototype, 'updateProduct', 0);
 Body()(ProductsController.prototype, 'updateProduct', 1);
+Delete('admin/:id')(
+  ProductsController.prototype,
+  'deleteProduct',
+  Object.getOwnPropertyDescriptor(ProductsController.prototype, 'deleteProduct'),
+);
+UseGuards(AuthGuard, AdminGuard)(
+  ProductsController.prototype,
+  'deleteProduct',
+  Object.getOwnPropertyDescriptor(ProductsController.prototype, 'deleteProduct'),
+);
+Param('id', ParseIntPipe)(ProductsController.prototype, 'deleteProduct', 0);
 ReflectMetadata.defineMetadata(
   'design:paramtypes',
   [ProductsService],
