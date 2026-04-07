@@ -1,14 +1,14 @@
 services:
   - type: web
     name: onlineshop-backend
-    env: dotnet
+    env: node
     plan: starter
-    buildCommand: dotnet publish OnlineShopBackend.csproj -c Release -o out
-    startCommand: dotnet out/OnlineShopBackend.dll
+    buildCommand: npm install
+    startCommand: npm run start:prod
     autoDeploy: true
     envVars:
-      - key: ASPNETCORE_URLS
-        value: http://0.0.0.0:10000
+      - key: PORT
+        value: "10000"
       - key: JWT_SECRET_KEY
         sync: false
       - key: JWT_ISSUER
@@ -17,10 +17,8 @@ services:
         value: OnlineShopFrontend
       - key: JWT_EXPIRES_IN_MINUTES
         value: "60"
-      - key: DB_CONNECTION_STRING
-        sync: false
-      - key: ENABLE_SWAGGER
-        value: "false"
+      - key: DB_SQLITE_PATH
+        value: shop.db
       - key: EmailSettings__SmtpHost
         sync: false
       - key: EmailSettings__SmtpPort

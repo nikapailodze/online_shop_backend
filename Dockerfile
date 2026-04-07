@@ -1,17 +1,8 @@
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS base
+FROM node:20-alpine
 WORKDIR /app
-EXPOSE 8080
-
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
-WORKDIR /src
-COPY OnlineShopBackend.csproj ./
-RUN dotnet restore OnlineShopBackend.csproj
+COPY package*.json ./
+RUN npm install --omit=dev
 COPY . .
-RUN dotnet publish OnlineShopBackend.csproj -c Release -o /app/out
-
-FROM base AS final
-WORKDIR /app
-COPY --from=build /app/out .
-# Default to port 8080; override with ASPNETCORE_URLS if needed
-ENV ASPNETCORE_URLS=http://0.0.0.0:8080
-ENTRYPOINT ["dotnet", "OnlineShopBackend.dll"]
+EXPOSE 8080
+ENV PORT=8080
+CMD ["npm", "run", "start:prod"]
