@@ -8,7 +8,9 @@ const { config } = require('./shared/config');
 const { initializeDatabase } = require('./shared/bootstrap');
 
 async function bootstrap() {
+  console.log('[bootstrap] Initializing database...');
   await initializeDatabase();
+  console.log('[bootstrap] Creating Nest application...');
   const app = await NestFactory.create(AppModule);
   const bodyLimit = '25mb';
 
@@ -28,7 +30,12 @@ async function bootstrap() {
     origin: origins.length ? origins : true,
   });
 
-  await app.listen(config.port, '0.0.0.0');
+  console.log(`[bootstrap] Starting HTTP server on ${config.host}:${config.port}...`);
+  await app.listen(config.port, config.host);
+  console.log(`[bootstrap] API running at http://${config.host}:${config.port}`);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('[bootstrap] Startup failed:', error);
+  process.exit(1);
+});

@@ -59,10 +59,30 @@ async function ensureConsultationsTable() {
   `);
 }
 
+async function ensureCalculatorsTable() {
+  await run(`
+    CREATE TABLE IF NOT EXISTS "Calculators" (
+      "Id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+      "Slug" TEXT NOT NULL UNIQUE,
+      "Title" TEXT NOT NULL,
+      "ShortDescription" TEXT NOT NULL,
+      "Category" TEXT NOT NULL,
+      "Description" TEXT NULL,
+      "FieldsJson" TEXT NOT NULL,
+      "Formula" TEXT NOT NULL,
+      "ResultLabel" TEXT NOT NULL,
+      "Status" TEXT NOT NULL DEFAULT 'published',
+      "CreatedAtUtc" TEXT NOT NULL,
+      "UpdatedAtUtc" TEXT NOT NULL
+    )
+  `);
+}
+
 async function initializeDatabase() {
   await ensureUsersRoleColumn();
   await ensureBlogsTable();
   await ensureConsultationsTable();
+  await ensureCalculatorsTable();
 }
 
 module.exports = { initializeDatabase };
