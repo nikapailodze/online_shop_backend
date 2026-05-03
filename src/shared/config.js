@@ -12,6 +12,7 @@ function parsePortFromAspNetCoreUrls(value) {
 }
 
 const config = {
+  host: process.env.HOST || '0.0.0.0',
   port:
     parsePortFromAspNetCoreUrls(process.env.ASPNETCORE_URLS) ||
     Number(process.env.PORT || 5001),

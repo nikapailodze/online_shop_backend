@@ -5,6 +5,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/main.js",
+    "start:local": "node --env-file=.env.local src/main.js",
+    "start:local:watch": "node --env-file=.env.local --watch src/main.js",
     "start:dev": "node --watch src/main.js",
     "start:prod": "node src/main.js"
   },
