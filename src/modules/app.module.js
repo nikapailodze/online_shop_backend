@@ -5,6 +5,7 @@ const { CartModule } = require('./cart/cart.module');
 const { OrdersModule } = require('./orders/orders.module');
 const { ConsultationsModule } = require('./consultations/consultations.module');
 const { BlogsModule } = require('./blogs/blogs.module');
+const { CalculatorsModule } = require('./calculators/calculators.module');
 
 class AppModule {}
 
@@ -16,6 +17,7 @@ Module({
     OrdersModule,
     ConsultationsModule,
     BlogsModule,
+    CalculatorsModule,
   ],
 })(AppModule);
 
