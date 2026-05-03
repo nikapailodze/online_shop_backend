@@ -127,6 +127,22 @@ function mapCalculatorRow(row) {
   };
 }
 
+function validateStatus(status) {
+  if (!['draft', 'published'].includes(status)) {
+    throw new BadRequestException({
+      message: 'Status must be either draft or published.',
+    });
+  }
+}
+
+function validateCategory(category) {
+  if (!VALID_CATEGORIES.has(category)) {
+    throw new BadRequestException({
+      message: 'Category is invalid.',
+    });
+  }
+}
+
 class CalculatorsService {
   async getPublishedCalculators() {
     const rows = await all(
@@ -178,17 +194,8 @@ class CalculatorsService {
       throw new BadRequestException({ message: 'Slug is required.' });
     }
 
-    if (!VALID_CATEGORIES.has(category)) {
-      throw new BadRequestException({
-        message: 'Category is invalid.',
-      });
-    }
-
-    if (!['draft', 'published'].includes(status)) {
-      throw new BadRequestException({
-        message: 'Status must be either draft or published.',
-      });
-    }
+    validateCategory(category);
+    validateStatus(status);
 
     const existing = await get('SELECT "Id" FROM "Calculators" WHERE "Slug" = ?', [
       slug,
@@ -223,6 +230,88 @@ class CalculatorsService {
     );
 
     return this.getCalculatorById(result.lastID);
+  }
+
+  async updateCalculator(id, body) {
+    const existing = await this.getCalculatorById(id);
+    const title = String(body.title ?? existing.title).trim();
+    const short = String(body.short ?? existing.short).trim();
+    const category = String(body.category ?? existing.category).trim() || 'General';
+    const description = String(body.description ?? existing.description ?? '').trim();
+    const resultLabel =
+      String(body.resultLabel ?? existing.resultLabel).trim() || 'Result';
+    const status = String(body.status ?? existing.status).trim() || 'published';
+    const fields = body.fields ? parseFields(body.fields) : existing.fields;
+    const formula = body.formula
+      ? validateFormula(body.formula, fields)
+      : existing.formula;
+    const slug = normalizeSlug(body.slug ?? existing.slug ?? title);
+
+    if (!title) {
+      throw new BadRequestException({ message: 'Title is required.' });
+    }
+
+    if (!short) {
+      throw new BadRequestException({ message: 'Short description is required.' });
+    }
+
+    if (!slug) {
+      throw new BadRequestException({ message: 'Slug is required.' });
+    }
+
+    validateCategory(category);
+    validateStatus(status);
+
+    const conflicting = await get(
+      'SELECT "Id" FROM "Calculators" WHERE "Slug" = ? AND "Id" != ?',
+      [slug, id],
+    );
+    if (conflicting) {
+      throw new BadRequestException({
+        message: 'A calculator with this slug already exists.',
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await run(
+      `
+        UPDATE "Calculators"
+        SET
+          "Slug" = ?,
+          "Title" = ?,
+          "ShortDescription" = ?,
+          "Category" = ?,
+          "Description" = ?,
+          "FieldsJson" = ?,
+          "Formula" = ?,
+          "ResultLabel" = ?,
+          "Status" = ?,
+          "UpdatedAtUtc" = ?
+        WHERE "Id" = ?
+      `,
+      [
+        slug,
+        title,
+        short,
+        category,
+        description || null,
+        JSON.stringify(fields),
+        formula,
+        resultLabel,
+        status,
+        now,
+        id,
+      ],
+    );
+
+    return this.getCalculatorById(id);
+  }
+
+  async deleteCalculator(id) {
+    await this.getCalculatorById(id);
+    await run('DELETE FROM "Calculators" WHERE "Id" = ?', [id]);
+    return { message: 'Calculator deleted successfully.' };
   }
 
   async getCalculatorById(id) {

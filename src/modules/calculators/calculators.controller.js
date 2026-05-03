@@ -1,8 +1,10 @@
 const {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } = require('@nestjs/common');
@@ -30,6 +32,14 @@ class CalculatorsController {
 
   async createCalculator(body) {
     return this.calculatorsService.createCalculator(body);
+  }
+
+  async updateCalculator(id, body) {
+    return this.calculatorsService.updateCalculator(id, body);
+  }
+
+  async deleteCalculator(id) {
+    return this.calculatorsService.deleteCalculator(id);
   }
 }
 
@@ -76,6 +86,43 @@ UseGuards(AuthGuard, AdminGuard)(
   ),
 );
 Body()(CalculatorsController.prototype, 'createCalculator', 0);
+
+Patch('admin/:id')(
+  CalculatorsController.prototype,
+  'updateCalculator',
+  Object.getOwnPropertyDescriptor(
+    CalculatorsController.prototype,
+    'updateCalculator',
+  ),
+);
+UseGuards(AuthGuard, AdminGuard)(
+  CalculatorsController.prototype,
+  'updateCalculator',
+  Object.getOwnPropertyDescriptor(
+    CalculatorsController.prototype,
+    'updateCalculator',
+  ),
+);
+Param('id')(CalculatorsController.prototype, 'updateCalculator', 0);
+Body()(CalculatorsController.prototype, 'updateCalculator', 1);
+
+Delete('admin/:id')(
+  CalculatorsController.prototype,
+  'deleteCalculator',
+  Object.getOwnPropertyDescriptor(
+    CalculatorsController.prototype,
+    'deleteCalculator',
+  ),
+);
+UseGuards(AuthGuard, AdminGuard)(
+  CalculatorsController.prototype,
+  'deleteCalculator',
+  Object.getOwnPropertyDescriptor(
+    CalculatorsController.prototype,
+    'deleteCalculator',
+  ),
+);
+Param('id')(CalculatorsController.prototype, 'deleteCalculator', 0);
 
 Get(':slug')(
   CalculatorsController.prototype,
