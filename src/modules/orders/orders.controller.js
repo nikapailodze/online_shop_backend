@@ -8,6 +8,7 @@ const {
 const ReflectMetadata = Reflect;
 const { OrdersService } = require('./orders.service');
 const { AuthGuard } = require('../../shared/auth.guard');
+const { AdminGuard } = require('../../shared/admin.guard');
 const { CurrentUser } = require('../../shared/current-user.decorator');
 
 class OrdersController {
@@ -17,6 +18,10 @@ class OrdersController {
 
   async getOrders(user) {
     return this.ordersService.getOrders(user.Id);
+  }
+
+  async getAllOrders() {
+    return this.ordersService.getAllOrders();
   }
 
   async checkout(user, body) {
@@ -33,6 +38,17 @@ Get()(
   Object.getOwnPropertyDescriptor(OrdersController.prototype, 'getOrders'),
 );
 CurrentUser()(OrdersController.prototype, 'getOrders', 0);
+
+Get('admin/all')(
+  OrdersController.prototype,
+  'getAllOrders',
+  Object.getOwnPropertyDescriptor(OrdersController.prototype, 'getAllOrders'),
+);
+UseGuards(AuthGuard, AdminGuard)(
+  OrdersController.prototype,
+  'getAllOrders',
+  Object.getOwnPropertyDescriptor(OrdersController.prototype, 'getAllOrders'),
+);
 
 Post('checkout')(
   OrdersController.prototype,
