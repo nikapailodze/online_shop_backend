@@ -80,6 +80,65 @@ class OrdersService {
     return result;
   }
 
+  async getAllOrders() {
+    const orders = await all(
+      `
+        SELECT
+          o."Id" AS OrderId,
+          o."UserId" AS UserId,
+          o."TotalPrice" AS TotalPrice,
+          o."CreatedAtUtc" AS CreatedAtUtc,
+          u."Name" AS UserName,
+          u."Surname" AS UserSurname,
+          u."Email" AS UserEmail
+        FROM "Orders" o
+        INNER JOIN "Users" u ON u."Id" = o."UserId"
+        ORDER BY o."CreatedAtUtc" DESC
+      `,
+    );
+
+    const result = [];
+    for (const order of orders) {
+      const items = await all(
+        `
+          SELECT
+            oi."Id" AS OrderItemId,
+            oi."ProductId" AS ProductId,
+            oi."Quantity" AS Quantity,
+            oi."UnitPrice" AS UnitPrice,
+            oi."Color" AS Color,
+            oi."Size" AS Size,
+            p."Name" AS ProductName
+          FROM "OrderItems" oi
+          INNER JOIN "Products" p ON p."Id" = oi."ProductId"
+          WHERE oi."OrderId" = ?
+          ORDER BY oi."Id" ASC
+        `,
+        [order.OrderId],
+      );
+
+      result.push({
+        orderId: order.OrderId,
+        userId: order.UserId,
+        customerName: `${order.UserName} ${order.UserSurname || ''}`.trim(),
+        customerEmail: order.UserEmail,
+        totalPrice: Number(order.TotalPrice),
+        createdAtUtc: order.CreatedAtUtc,
+        items: items.map((item) => ({
+          orderItemId: item.OrderItemId,
+          productId: item.ProductId,
+          productName: item.ProductName,
+          quantity: item.Quantity,
+          unitPrice: Number(item.UnitPrice),
+          color: item.Color || undefined,
+          size: item.Size || undefined,
+        })),
+      });
+    }
+
+    return result;
+  }
+
   async checkout(userId, body) {
     const checkoutItems = normalizeCheckoutItems(body?.items);
     const cartItems = [];

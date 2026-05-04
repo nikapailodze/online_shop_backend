@@ -78,11 +78,35 @@ async function ensureCalculatorsTable() {
   `);
 }
 
+async function ensureOrdersTables() {
+  await run(`
+    CREATE TABLE IF NOT EXISTS "Orders" (
+      "Id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+      "UserId" INTEGER NOT NULL,
+      "TotalPrice" TEXT NOT NULL,
+      "CreatedAtUtc" TEXT NOT NULL
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS "OrderItems" (
+      "Id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+      "OrderId" INTEGER NOT NULL,
+      "ProductId" INTEGER NOT NULL,
+      "Quantity" INTEGER NOT NULL,
+      "UnitPrice" TEXT NOT NULL,
+      "Color" TEXT NULL,
+      "Size" TEXT NULL
+    )
+  `);
+}
+
 async function initializeDatabase() {
   await ensureUsersRoleColumn();
   await ensureBlogsTable();
   await ensureConsultationsTable();
   await ensureCalculatorsTable();
+  await ensureOrdersTables();
 }
 
 module.exports = { initializeDatabase };
