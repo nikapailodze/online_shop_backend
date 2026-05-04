@@ -31,12 +31,14 @@ function parseFields(fields) {
   const normalized = fields.map((field) => {
     const name = String(field?.name || '').trim();
     const label = String(field?.label || '').trim();
+    const type = String(field?.type || 'number').trim().toLowerCase();
     const unit = String(field?.unit || '').trim();
     const placeholder = String(field?.placeholder || '').trim();
     const defaultValue =
       typeof field?.defaultValue === 'number' && Number.isFinite(field.defaultValue)
         ? field.defaultValue
         : null;
+    const options = Array.isArray(field?.options) ? field.options : [];
 
     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
       throw new BadRequestException({
@@ -49,12 +51,54 @@ function parseFields(fields) {
       throw new BadRequestException({ message: 'Each field must have a label.' });
     }
 
+    if (!['number', 'select', 'boolean'].includes(type)) {
+      throw new BadRequestException({
+        message: 'Field type must be number, select, or boolean.',
+      });
+    }
+
+    const normalizedOptions =
+      type === 'select'
+        ? options.map((option) => {
+            const optionLabel = String(option?.label || '').trim();
+            const optionValue =
+              typeof option?.value === 'number' && Number.isFinite(option.value)
+                ? option.value
+                : Number(option?.value);
+
+            if (!optionLabel) {
+              throw new BadRequestException({
+                message: 'Each select option must have a label.',
+              });
+            }
+
+            if (!Number.isFinite(optionValue)) {
+              throw new BadRequestException({
+                message: 'Each select option must have a numeric value.',
+              });
+            }
+
+            return {
+              label: optionLabel,
+              value: optionValue,
+            };
+          })
+        : [];
+
+    if (type === 'select' && normalizedOptions.length === 0) {
+      throw new BadRequestException({
+        message: 'Select fields must include at least one option.',
+      });
+    }
+
     return {
       name,
       label,
+      type,
       unit,
       placeholder,
       defaultValue,
+      options: normalizedOptions,
     };
   });
 
