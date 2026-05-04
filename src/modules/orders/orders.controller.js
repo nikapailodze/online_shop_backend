@@ -1,4 +1,5 @@
 const {
+  Body,
   Controller,
   Get,
   Post,
@@ -18,8 +19,8 @@ class OrdersController {
     return this.ordersService.getOrders(user.Id);
   }
 
-  async checkout(user) {
-    return this.ordersService.checkout(user.Id);
+  async checkout(user, body) {
+    return this.ordersService.checkout(user.Id, body);
   }
 }
 
@@ -39,6 +40,7 @@ Post('checkout')(
   Object.getOwnPropertyDescriptor(OrdersController.prototype, 'checkout'),
 );
 CurrentUser()(OrdersController.prototype, 'checkout', 0);
+Body()(OrdersController.prototype, 'checkout', 1);
 ReflectMetadata.defineMetadata('design:paramtypes', [OrdersService], OrdersController);
 
 module.exports = { OrdersController };
