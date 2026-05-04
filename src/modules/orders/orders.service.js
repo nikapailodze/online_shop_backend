@@ -2,6 +2,34 @@ const { BadRequestException, Injectable } = require('@nestjs/common');
 const ReflectMetadata = Reflect;
 const { all, get, run, transaction } = require('../../shared/database');
 
+function normalizeCheckoutItems(rawItems) {
+  if (!Array.isArray(rawItems) || rawItems.length === 0) {
+    throw new BadRequestException({ message: 'Cart is empty.' });
+  }
+
+  return rawItems.map((item) => {
+    const productId = Number(item?.productId);
+    const quantity = Number(item?.quantity);
+    const color = item?.color ? String(item.color).trim() : null;
+    const size = item?.size ? String(item.size).trim() : null;
+
+    if (!Number.isInteger(productId) || productId <= 0) {
+      throw new BadRequestException({ message: 'Each cart item must have a valid product.' });
+    }
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new BadRequestException({ message: 'Each cart item must have a quantity greater than zero.' });
+    }
+
+    return {
+      productId,
+      quantity,
+      color,
+      size,
+    };
+  });
+}
+
 class OrdersService {
   constructor(emailService) {
     this.emailService = emailService;
@@ -52,38 +80,28 @@ class OrdersService {
     return result;
   }
 
-  async checkout(userId) {
-    const cartItems = await all(
-      `
-        SELECT
-          c."Id" AS CartItemId,
-          c."ProductId" AS ProductId,
-          c."Quantity" AS Quantity,
-          c."Color" AS Color,
-          c."Size" AS Size,
-          p."Name" AS ProductName,
-          p."Price" AS Price
-        FROM "CartItems" c
-        LEFT JOIN "Products" p ON p."Id" = c."ProductId"
-        WHERE c."UserId" = ?
-        ORDER BY c."Id" ASC
-      `,
-      [userId],
-    );
+  async checkout(userId, body) {
+    const checkoutItems = normalizeCheckoutItems(body?.items);
+    const cartItems = [];
 
-    if (!cartItems.length) {
-      throw new BadRequestException({ message: 'Cart is empty.' });
-    }
+    for (const item of checkoutItems) {
+      const product = await get('SELECT * FROM "Products" WHERE "Id" = ?', [
+        item.productId,
+      ]);
 
-    const orphanedItems = cartItems.filter((item) => !item.ProductName);
-    if (orphanedItems.length) {
-      for (const item of orphanedItems) {
-        await run('DELETE FROM "CartItems" WHERE "Id" = ?', [item.CartItemId]);
+      if (!product) {
+        throw new BadRequestException({
+          message: 'Some items are no longer available. Please review your cart and try again.',
+        });
       }
 
-      throw new BadRequestException({
-        message:
-          'Some items are no longer available and were removed from your cart. Please review your cart and try again.',
+      cartItems.push({
+        ProductId: product.Id,
+        Quantity: item.quantity,
+        Color: item.color,
+        Size: item.size,
+        ProductName: product.Name,
+        Price: Number(product.Price),
       });
     }
 
@@ -112,8 +130,6 @@ class OrdersService {
           ],
         );
       }
-
-      await run('DELETE FROM "CartItems" WHERE "UserId" = ?', [userId]);
       return orderResult.lastID;
     });
 
