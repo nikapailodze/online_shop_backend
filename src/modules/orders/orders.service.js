@@ -52,9 +52,9 @@ class OrdersService {
             oi."UnitPrice" AS UnitPrice,
             oi."Color" AS Color,
             oi."Size" AS Size,
-            p."Name" AS ProductName
+            COALESCE(p."Name", 'Deleted product') AS ProductName
           FROM "OrderItems" oi
-          INNER JOIN "Products" p ON p."Id" = oi."ProductId"
+          LEFT JOIN "Products" p ON p."Id" = oi."ProductId"
           WHERE oi."OrderId" = ?
           ORDER BY oi."Id" ASC
         `,
@@ -108,9 +108,9 @@ class OrdersService {
             oi."UnitPrice" AS UnitPrice,
             oi."Color" AS Color,
             oi."Size" AS Size,
-            p."Name" AS ProductName
+            COALESCE(p."Name", 'Deleted product') AS ProductName
           FROM "OrderItems" oi
-          INNER JOIN "Products" p ON p."Id" = oi."ProductId"
+          LEFT JOIN "Products" p ON p."Id" = oi."ProductId"
           WHERE oi."OrderId" = ?
           ORDER BY oi."Id" ASC
         `,

@@ -6,6 +6,12 @@ services:
     buildCommand: npm install
     startCommand: npm run start:prod
     autoDeploy: true
+    # Persistent disk so the SQLite database survives deploys and restarts.
+    # Without this, Render wipes the filesystem on every deploy.
+    disk:
+      name: shop-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: PORT
         value: "10000"
@@ -18,7 +24,7 @@ services:
       - key: JWT_EXPIRES_IN_MINUTES
         value: "60"
       - key: DB_SQLITE_PATH
-        value: shop.db
+        value: /var/data/shop.db
       - key: EmailSettings__SmtpHost
         sync: false
       - key: EmailSettings__SmtpPort
