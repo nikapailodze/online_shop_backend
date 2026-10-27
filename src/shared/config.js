@@ -18,10 +18,9 @@ const config = {
     Number(process.env.PORT || 5001),
   databasePath:
     process.env.DB_SQLITE_PATH || path.join(process.cwd(), 'shop.db'),
-  jwtSecret:
-    process.env.JWT_SECRET_KEY ||
-    process.env.JWT_SECRET ||
-    'a7b8c973d2f944368f47f965975de97cf2e00c6e043d4f07a8e0c7219d25cf4d',
+  // No fallback on purpose: a secret committed to the repo lets anyone forge
+  // admin tokens. Set JWT_SECRET_KEY in .env.local and in Render's dashboard.
+  jwtSecret: process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || '',
   jwtIssuer: process.env.JWT_ISSUER || 'OnlineShopBackend',
   jwtAudience: process.env.JWT_AUDIENCE || 'OnlineShopFrontend',
   jwtExpiresInMinutes: Number(process.env.JWT_EXPIRES_IN_MINUTES || 60),
@@ -59,4 +58,13 @@ const config = {
   },
 };
 
-module.exports = { config };
+function assertRequiredConfig() {
+  if (!config.jwtSecret || config.jwtSecret.length < 32) {
+    throw new Error(
+      'JWT_SECRET_KEY is missing or too short (need at least 32 characters). ' +
+        'Set it in .env.local for local runs and in the Render dashboard for production.',
+    );
+  }
+}
+
+module.exports = { config, assertRequiredConfig };

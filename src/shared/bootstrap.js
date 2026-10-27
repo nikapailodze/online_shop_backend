@@ -6,6 +6,46 @@ async function columnExists(tableName, columnName) {
   return columns.some((column) => column.name === columnName);
 }
 
+// Core tables originally created by the old EF Core migrations. Creating them
+// here means a brand-new (empty) database file works on first deploy.
+async function ensureCoreTables() {
+  await run(`
+    CREATE TABLE IF NOT EXISTS "Users" (
+      "Id" INTEGER NOT NULL CONSTRAINT "PK_Users" PRIMARY KEY AUTOINCREMENT,
+      "Name" TEXT NOT NULL,
+      "Surname" TEXT NOT NULL,
+      "Email" TEXT NOT NULL,
+      "PasswordHash" TEXT NOT NULL,
+      "Role" TEXT NOT NULL DEFAULT 'user'
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS "Products" (
+      "Id" INTEGER NOT NULL CONSTRAINT "PK_Products" PRIMARY KEY AUTOINCREMENT,
+      "Name" TEXT NOT NULL,
+      "Description" TEXT NOT NULL,
+      "Price" TEXT NOT NULL,
+      "ImageUrl" TEXT NOT NULL,
+      "SizesCsv" TEXT NOT NULL,
+      "ColorsCsv" TEXT NOT NULL
+    )
+  `);
+
+  await run(`
+    CREATE TABLE IF NOT EXISTS "CartItems" (
+      "Id" INTEGER NOT NULL CONSTRAINT "PK_CartItems" PRIMARY KEY AUTOINCREMENT,
+      "UserId" INTEGER NOT NULL,
+      "ProductId" INTEGER NOT NULL,
+      "Quantity" INTEGER NOT NULL,
+      "Color" TEXT NULL,
+      "Size" TEXT NULL
+    )
+  `);
+
+  await run('CREATE INDEX IF NOT EXISTS "IX_CartItems_UserId" ON "CartItems" ("UserId")');
+}
+
 async function ensureUsersRoleColumn() {
   const exists = await columnExists('Users', 'Role');
   if (!exists) {
@@ -102,6 +142,7 @@ async function ensureOrdersTables() {
 }
 
 async function initializeDatabase() {
+  await ensureCoreTables();
   await ensureUsersRoleColumn();
   await ensureBlogsTable();
   await ensureConsultationsTable();

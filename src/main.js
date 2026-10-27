@@ -4,10 +4,11 @@ const { NestFactory } = require('@nestjs/core');
 const { ValidationPipe } = require('@nestjs/common');
 const express = require('express');
 const { AppModule } = require('./modules/app.module');
-const { config } = require('./shared/config');
+const { config, assertRequiredConfig } = require('./shared/config');
 const { initializeDatabase } = require('./shared/bootstrap');
 
 async function bootstrap() {
+  assertRequiredConfig();
   console.log('[bootstrap] Initializing database...');
   await initializeDatabase();
   console.log('[bootstrap] Creating Nest application...');
